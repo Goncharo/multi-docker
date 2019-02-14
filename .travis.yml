@@ -1,0 +1,31 @@
+sudo: required
+
+# specify generic language since we're using docker
+language: generic
+
+services:
+  - docker
+
+# build development version of client for testing
+# note we can add tests for other images as well
+before_install:
+  - docker build -t dgoncharov/react-test -f ./client/Dockerfile.dev ./client
+
+# test running section
+script:
+  - docker run dgoncharov/react-test npm test -- --coverage
+
+# build production images
+after_success:
+  - docker build -t dgoncharov/multi-client ./client
+  - docker build -t dgoncharov/multi-nginx ./nginx
+  - docker build -t dgoncharov/multi-server ./server
+  - docker build -t dgoncharov/multi-worker ./worker
+  # login to docker CLI, using encrypted env vars from travis
+  # pipe password into docker login, using stdin
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # push images to docker hub
+  - docker push dgoncharov/multi-client
+  - docker push dgoncharov/multi-nginx
+  - docker push dgoncharov/multi-server
+  - docker push dgoncharov/multi-worker
