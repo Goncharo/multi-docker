@@ -29,3 +29,25 @@ after_success:
   - docker push dgoncharov/multi-nginx
   - docker push dgoncharov/multi-server
   - docker push dgoncharov/multi-worker
+
+deploy:
+  # use AWS elastic beanstalk to deploy app
+  provider: elasticbeanstalk
+  # the region AWS app was created in, from AWS URL
+  region: "us-east-2"
+  # name of the AWS app
+  app: "multi-docker"
+  # environment name (top of AWS dashboard)
+  env: "MultiDocker-env"
+  # zips up source code, and uploads to S3,
+  # then tells AWS EB to use this code to deploy app
+  # (search for S3 buckets in AWS with elasticbeanstalk name)
+  bucket_name: "elasticbeanstalk-us-east-2-758672168977"
+  # the folder which the zip will get placed (app name)
+  bucket_path: "docker-multi"
+    # deploy anytime we push code to the master branch
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key:
+    secure: "$AWS_SECRET_KEY"
